@@ -1,0 +1,17 @@
+services:
+  ens_bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ens_bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      RUST_LOG: ${RUST_LOG:-info}
+    networks:
+      - ens_net
+
+networks:
+  ens_net:
+    driver: bridge
