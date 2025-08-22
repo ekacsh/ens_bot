@@ -30,6 +30,7 @@ pub async fn member_info(
             let mut response = String::new();
             response.push_str(format!("Username: {}\n", u.username).as_str());
             response.push_str(format!("Last Week GP: {}\n", u.week_gp).as_str());
+            response.push_str(format!("Total GP: {}\n", u.total_gp).as_str());
             response.push_str(format!("Rank: {}\n", current_rank.name).as_str());
             response
         }

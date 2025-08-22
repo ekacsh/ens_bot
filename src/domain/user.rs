@@ -13,6 +13,8 @@ pub struct User {
     pub username: String,
     #[serde(rename = "weekGP")]
     pub week_gp: u64,
+    #[serde(rename = "totalGP")]
+    pub total_gp: u64,
     #[serde(rename = "oldRank")]
     pub old_rank: String,
     #[serde(rename = "currentRank")]
