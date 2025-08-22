@@ -1,10 +1,10 @@
 name: Build and Push Docker image
-paths:
-  - 'src/**'
-  - 'Cargo.toml'
-  - 'Cargo.lock'
 on:
   push:
+    paths:
+      - 'src/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
     branches:
       - main
   workflow_dispatch:
