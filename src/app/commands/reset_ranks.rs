@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use serenity::all::RoleId;
+use tracing::info;
 
 use crate::app::commands::helpers;
 use crate::domain::rank::falcon_rank::FalconRank;
@@ -31,8 +32,7 @@ pub async fn reset_ranks(ctx: Context<'_>) -> Result<(), Error> {
             let code = match &members.iter().find(|u| u.discord_id == user_id) {
                 Some(u) => u.current_rank.clone(),
                 None => {
-                    error_message
-                        .push_str(&format!("Member {user_id} not in the google sheet\n"));
+                    error_message.push_str(&format!("Member {user_id} not in the google sheet\n"));
                     continue;
                 }
             };
@@ -60,7 +60,7 @@ pub async fn reset_ranks(ctx: Context<'_>) -> Result<(), Error> {
                 continue;
             }
 
-            println!(
+            info!(
                 "[REMOVED_ROLE]: Removed role {} from {}({})",
                 rank_role, username, gm.user.id
             );
@@ -76,7 +76,7 @@ pub async fn reset_ranks(ctx: Context<'_>) -> Result<(), Error> {
             let rank = current_rank.as_rank();
 
             gm.add_role(ctx, rank.rank_id).await.unwrap();
-            println!(
+            info!(
                 "[ADDED_ROLE]: Added role {}({}) to {}({})",
                 rank.name, rank.rank_id, username, gm.user.id
             );

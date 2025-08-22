@@ -4,18 +4,20 @@ use poise::serenity_prelude as serenity;
 
 use ens_bot::{
     Data, Error,
-    app::commands::{
-        self,
-        helpers::{is_admin, is_guild_member},
-    },
+    app::commands::{self, helpers},
     domain::{mee6_player::ApiMee6Repository, user::GSUserRepository},
 };
+use tracing::{error, info};
+use tracing_subscriber::{fmt, EnvFilter};
 
 #[tokio::main]
 async fn main() {
-    tracing_subscriber::fmt::init();
-
     dotenvy::dotenv().ok();
+    
+    fmt()
+        .with_env_filter(EnvFilter::from_default_env())
+        .init();
+
 
     let options = poise::FrameworkOptions {
         commands: vec![
@@ -34,16 +36,16 @@ async fn main() {
         on_error: |error| Box::pin(on_error(error)),
         pre_command: |ctx| {
             Box::pin(async move {
-                println!("Executing command {}...", ctx.command().qualified_name);
+                info!("Executing command {}...", ctx.command().qualified_name);
             })
         },
         command_check: Some(|ctx| {
             Box::pin(async move {
-                if is_admin(ctx).await? {
+                if helpers::is_admin(ctx).await? {
                     return Ok(true);
                 }
 
-                let is_guild_member = is_guild_member(ctx).await?;
+                let is_guild_member = helpers::is_guild_member(ctx).await?;
 
                 match ctx.command().name.as_str() {
                     "ping" => Ok(true),
@@ -54,14 +56,14 @@ async fn main() {
         }),
         post_command: |ctx| {
             Box::pin(async move {
-                println!("Executed command {}!", ctx.command().qualified_name);
+                info!("Executed command {}!", ctx.command().qualified_name);
             })
         },
         event_handler: |_ctx, event, _framework, _data| {
             Box::pin(async move {
                 match event {
                     serenity::FullEvent::Ready { data_about_bot, .. } => {
-                        println!("Logged in as {}", data_about_bot.user.name);
+                        info!("Logged in as {}", data_about_bot.user.name);
                     }
                     _ => {}
                 }
@@ -127,7 +129,7 @@ async fn main() {
     };
 
     if let Err(e) = client.start().await {
-        println!("Client error: {e:?}");
+        error!("Client error: {e:?}");
     }
 }
 
@@ -135,11 +137,11 @@ async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
     match error {
         poise::FrameworkError::Setup { error, .. } => panic!("Failed to start bot: {error:?}"),
         poise::FrameworkError::Command { error, ctx, .. } => {
-            println!("Error in command `{}`: {:?}", ctx.command().name, error,);
+            error!("Error in command `{}`: {:?}", ctx.command().name, error,);
         }
         error => {
             if let Err(e) = poise::builtins::on_error(error).await {
-                println!("Error while handling error: {e}")
+                error!("Error while handling error: {e}")
             }
         }
     }
