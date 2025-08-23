@@ -1,8 +1,8 @@
 
-FROM alpine:3.20 AS runtime
+FROM debian:bookworm-slim
 
 # Create non-root user (same uid/gid as in builder to preserve ownership)
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
 
 WORKDIR /app
 
