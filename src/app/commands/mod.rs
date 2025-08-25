@@ -26,3 +26,6 @@ pub use update_mee6::update_mee6;
 
 mod age_check;
 pub use age_check::age_check;
+
+mod to_kick;
+pub use to_kick::to_kick;

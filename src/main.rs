@@ -42,6 +42,7 @@ fn build_framework_options() -> poise::FrameworkOptions<Data, Error> {
             commands::check_members(),
             commands::week_ranking(),
             commands::reset_ranks(),
+            commands::to_kick(),
         ],
         prefix_options: poise::PrefixFrameworkOptions {
             prefix: Some("!".into()),
