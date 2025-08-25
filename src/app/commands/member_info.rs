@@ -1,3 +1,5 @@
+use std::collections::BTreeSet;
+
 use crate::{Context, Error, domain::rank::falcon_rank::FalconRank};
 
 #[poise::command(slash_command)]
@@ -21,17 +23,31 @@ pub async fn member_info(
 
     let member = members.iter().find(|u| u.discord_id == user.id.get());
 
+    let mut total_gp_sorted: Vec<_> = members.iter().collect();
+    total_gp_sorted.sort_by(|a, b| b.total_gp.cmp(&a.total_gp));
+
     let response = match member {
         Some(u) => {
+            
+            let total_gp_position = {
+                let ranking: BTreeSet<u64> = members.iter().map(|m| m.total_gp).collect();
+                ranking.len() - ranking.iter().position(|x| *x == u.total_gp).unwrap()
+            };
+
+            let week_gp_position = {
+                let ranking: BTreeSet<u64> = members.iter().map(|m| m.week_gp).collect();
+                ranking.len() - ranking.iter().position(|x| *x == u.week_gp).unwrap()
+            };
+
             let current_rank = FalconRank::from_code(u.current_rank.as_ref())
                 .unwrap()
                 .as_rank();
 
             let mut response = String::new();
-            response.push_str(format!("Username: {}\n", u.username).as_str());
-            response.push_str(format!("Last Week GP: {}\n", u.week_gp).as_str());
-            response.push_str(format!("Total GP: {}\n", u.total_gp).as_str());
-            response.push_str(format!("Rank: {}\n", current_rank.name).as_str());
+            response.push_str(format!("**Username**: {}\n", u.username).as_str());
+            response.push_str(format!("**Last Week GP**: {} (#{week_gp_position})\n", u.week_gp).as_str());
+            response.push_str(format!("**Total GP**: {} (#{total_gp_position})\n", u.total_gp).as_str());
+            response.push_str(format!("**Rank**: {}\n", current_rank.name).as_str());
             response
         }
         None => "Member not found".to_string(),
