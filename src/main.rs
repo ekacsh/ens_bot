@@ -8,18 +8,31 @@ use ens_bot::{
     domain::{mee6_player::ApiMee6Repository, user::GSUserRepository},
 };
 use tracing::{error, info};
-use tracing_subscriber::{fmt, EnvFilter};
+use tracing_subscriber::{EnvFilter, fmt};
 
 #[tokio::main]
 async fn main() {
     dotenvy::dotenv().ok();
-    
-    fmt()
-        .with_env_filter(EnvFilter::from_default_env())
-        .init();
+    init_tracing();
 
+    let options = build_framework_options();
+    let user_repository = build_user_repository();
+    let mee6_repository = build_mee6_repository();
 
-    let options = poise::FrameworkOptions {
+    let framework = build_framework(user_repository, mee6_repository, options).await;
+    let mut client = build_client(framework).await;
+
+    if let Err(e) = client.start().await {
+        error!("Client error: {e:?}");
+    }
+}
+
+fn init_tracing() {
+    fmt().with_env_filter(EnvFilter::from_default_env()).init();
+}
+
+fn build_framework_options() -> poise::FrameworkOptions<Data, Error> {
+    poise::FrameworkOptions {
         commands: vec![
             commands::ping(),
             commands::get_users(),
@@ -45,11 +58,19 @@ async fn main() {
                     return Ok(true);
                 }
 
+                let allow_all_commands = vec![
+                    commands::ping().name
+                ];
+
+                let guild_member_commands = vec![
+                    commands::member_info().name
+                ];
+
                 let is_guild_member = helpers::is_guild_member(ctx).await?;
 
-                match ctx.command().name.as_str() {
-                    "ping" => Ok(true),
-                    "member_info" if is_guild_member => Ok(true),
+                match &ctx.command().name {
+                    name if allow_all_commands.contains(name) => Ok(true),
+                    name if is_guild_member && guild_member_commands.contains(name) => Ok(true),
                     _ => Ok(false),
                 }
             })
@@ -71,31 +92,29 @@ async fn main() {
             })
         },
         ..Default::default()
-    };
+    }
+}
 
-    let user_repository = {
-        let api_url = env::var("GS_API_URL").expect("Expected the api url in the environment");
+fn build_user_repository() -> GSUserRepository {
+    let api_url = env::var("GS_API_URL").expect("Expected the api url in the environment");
+    GSUserRepository::new(api_url)
+}
 
-        GSUserRepository::new(api_url)
-    };
+fn build_mee6_repository() -> ApiMee6Repository {
+    let api_url = env::var("MEE6_API_URL").expect("Expected the mee6 api url in the environment");
+    let auth_token =
+        env::var("MEE6_TOKEN").expect("Expected the mee6 auth token in the environment");
+    ApiMee6Repository::new(api_url, auth_token)
+}
 
-    let mee6_repository = {
-        let api_url =
-            env::var("MEE6_API_URL").expect("Expected the mee6 api url in the environment");
-        let auth_token =
-            env::var("MEE6_TOKEN").expect("Expected the mee6 auth token in the environment");
-
-        ApiMee6Repository::new(api_url, auth_token)
-    };
-
-    let framework = poise::Framework::builder()
+async fn build_framework(
+    user_repository: GSUserRepository,
+    mee6_repository: ApiMee6Repository,
+    options: poise::FrameworkOptions<Data, Error>,
+) -> poise::Framework<Data, Error> {
+    poise::Framework::builder()
         .setup(move |ctx, _ready, framework| {
             Box::pin(async move {
-                // poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-
-                // Remove all global commands
-                // serenity::Command::set_global_commands(&ctx.http, vec![]).await?;
-
                 let guild_id = env::var("GUILD_ID")
                     .expect("Expected the guild id in the environment")
                     .parse::<u64>()
@@ -113,24 +132,20 @@ async fn main() {
             })
         })
         .options(options)
-        .build();
+        .build()
+}
 
-    let mut client = {
-        let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
+async fn build_client(framework: poise::Framework<Data, Error>) -> serenity::Client {
+    let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
 
-        let intents = serenity::GatewayIntents::non_privileged()
-            | serenity::GatewayIntents::MESSAGE_CONTENT
-            | serenity::GatewayIntents::GUILD_MEMBERS;
+    let intents = serenity::GatewayIntents::non_privileged()
+        | serenity::GatewayIntents::MESSAGE_CONTENT
+        | serenity::GatewayIntents::GUILD_MEMBERS;
 
-        serenity::ClientBuilder::new(token, intents)
-            .framework(framework)
-            .await
-            .expect("Err creating client")
-    };
-
-    if let Err(e) = client.start().await {
-        error!("Client error: {e:?}");
-    }
+    serenity::ClientBuilder::new(token, intents)
+        .framework(framework)
+        .await
+        .expect("Err creating client")
 }
 
 async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
