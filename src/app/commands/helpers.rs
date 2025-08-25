@@ -25,7 +25,7 @@ pub async fn get_guild_members(ctx: Context<'_>) -> Result<Vec<Member>, Error> {
 }
 
 pub async fn is_admin(ctx: Context<'_>) -> Result<bool, Error> {
-    has_rank(ctx, FalconRank::GuildMember).await
+    has_rank(ctx, FalconRank::Admin).await
 }
 
 pub async fn is_guild_member(ctx: Context<'_>) -> Result<bool, Error> {
