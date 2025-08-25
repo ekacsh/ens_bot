@@ -54,7 +54,7 @@ pub async fn check_members(ctx: Context<'_>) -> Result<(), Error> {
     // Build the command response
     let mut response = String::new();
 
-    response.push_str(generate_report(members).as_str());
+    response.push_str(generate_report(&members).as_str());
 
     response.push_str("**ALERTS:**\n");
     if not_in_server.is_empty() && not_in_sheet.is_empty() {
@@ -84,14 +84,14 @@ struct MemberStatus {
     pub sheet: bool,
 }
 
-fn generate_report(members: Vec<User>) -> String {
+fn generate_report(members: &[User]) -> String {
     let mut report = String::new();
 
     report.push_str("**Report**\n");
 
     let mut rank_counter: HashMap<String, u32> = HashMap::new();
 
-    for member in &members {
+    for member in members {
         let rank = member.current_rank.clone();
         let rank_count = rank_counter.entry(rank).or_insert(0);
         *rank_count += 1;

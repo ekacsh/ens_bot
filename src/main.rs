@@ -38,6 +38,7 @@ fn build_framework_options() -> poise::FrameworkOptions<Data, Error> {
             commands::get_users(),
             commands::get_mee6_players(),
             commands::member_info(),
+            commands::age_check(),
             commands::check_members(),
             commands::week_ranking(),
             commands::reset_ranks(),
@@ -63,7 +64,8 @@ fn build_framework_options() -> poise::FrameworkOptions<Data, Error> {
                 ];
 
                 let guild_member_commands = vec![
-                    commands::member_info().name
+                    commands::member_info().name,
+                    commands::age_check().name,
                 ];
 
                 let is_guild_member = helpers::is_guild_member(ctx).await?;

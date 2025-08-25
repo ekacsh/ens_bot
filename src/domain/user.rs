@@ -1,10 +1,19 @@
 use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
-use serde::Deserialize;
+use serde::{Deserialize, Deserializer};
+use chrono::NaiveDate;
 
 use crate::Error;
 use crate::domain::parser::deserialize_discord_id;
+
+fn parse_custom_date<'de, D>(deserializer: D) -> Result<NaiveDate, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s: &str = Deserialize::deserialize(deserializer)?;
+    NaiveDate::parse_from_str(s, "%d/%m/%y").map_err(serde::de::Error::custom)
+}
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct User {
@@ -19,6 +28,8 @@ pub struct User {
     pub old_rank: String,
     #[serde(rename = "currentRank")]
     pub current_rank: String,
+    #[serde(rename = "joinedAt", deserialize_with = "parse_custom_date")]
+    pub joined_at: NaiveDate,
 }
 
 #[async_trait]
