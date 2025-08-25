@@ -1,6 +1,10 @@
 
 FROM debian:bookworm-slim
 
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends procps && \
+    rm -rf /var/lib/apt/lists/*
+
 # Create non-root user (same uid/gid as in builder to preserve ownership)
 RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
 
