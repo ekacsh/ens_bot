@@ -30,6 +30,7 @@ pub struct User {
     pub current_rank: String,
     #[serde(rename = "joinedAt", deserialize_with = "parse_custom_date")]
     pub joined_at: NaiveDate,
+    pub comments: String,
 }
 
 #[async_trait]
