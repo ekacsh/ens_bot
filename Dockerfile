@@ -1,5 +1,6 @@
 
 FROM debian:bookworm-slim
+ARG BIN
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends procps && \
@@ -11,7 +12,7 @@ RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
 WORKDIR /app
 
 # Copy only the built binary
-COPY target/*/release/ens_bot /app/ens_bot
+COPY docker-bin/${BIN} /app/ens_bot
 
 # Ensure correct ownership and minimal permissions
 RUN chown appuser:appgroup /app/ens_bot && \
