@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use serenity::all::RoleId;
 use tracing::info;
 
+use crate::app::commands::check_members::generate_report;
 use crate::app::commands::helpers;
 use crate::domain::rank::falcon_rank::FalconRank;
 use crate::{Context, Error};
@@ -95,6 +96,12 @@ pub async fn reset_ranks(ctx: Context<'_>) -> Result<(), Error> {
         }
     }
 
-    ctx.say(error_message).await?;
+    // Generate report
+    let mut response = generate_report(&members);
+
+    response.push_str("*Errors:*\n");
+    response.push_str(error_message.as_str());
+
+    ctx.say(response).await?;
     Ok(())
 }

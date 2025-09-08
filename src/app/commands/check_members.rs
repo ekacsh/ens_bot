@@ -84,7 +84,7 @@ struct MemberStatus {
     pub sheet: bool,
 }
 
-fn generate_report(members: &[User]) -> String {
+pub fn generate_report(members: &[User]) -> String {
     let mut report = String::new();
 
     report.push_str("**Report**\n");
