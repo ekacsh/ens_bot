@@ -51,7 +51,9 @@ fn build_framework_options() -> poise::FrameworkOptions<Data, Error> {
         on_error: |error| Box::pin(on_error(error)),
         pre_command: |ctx| {
             Box::pin(async move {
-                info!("Executing command {}...", ctx.command().qualified_name);
+                let username = ctx.author().name.clone();
+                let user_id = ctx.author().id;
+                info!("User {username}({user_id}) is executing the command {}!", ctx.command().qualified_name);
             })
         },
         command_check: Some(|ctx| {
@@ -76,7 +78,9 @@ fn build_framework_options() -> poise::FrameworkOptions<Data, Error> {
         }),
         post_command: |ctx| {
             Box::pin(async move {
-                info!("Executed command {}!", ctx.command().qualified_name);
+                let username = ctx.author().name.clone();
+                let user_id = ctx.author().id;
+                info!("User {username}({user_id}) has executed the command {}!", ctx.command().qualified_name);
             })
         },
         event_handler: |_ctx, event, _framework, _data| {
