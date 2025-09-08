@@ -60,14 +60,10 @@ fn build_framework_options() -> poise::FrameworkOptions<Data, Error> {
                     return Ok(true);
                 }
 
-                let allow_all_commands = vec![
-                    commands::ping().name
-                ];
+                let allow_all_commands = [commands::ping().name];
 
-                let guild_member_commands = vec![
-                    commands::member_info().name,
-                    commands::age_check().name,
-                ];
+                let guild_member_commands =
+                    [commands::member_info().name, commands::age_check().name];
 
                 let is_guild_member = helpers::is_guild_member(ctx).await?;
 
@@ -85,11 +81,8 @@ fn build_framework_options() -> poise::FrameworkOptions<Data, Error> {
         },
         event_handler: |_ctx, event, _framework, _data| {
             Box::pin(async move {
-                match event {
-                    serenity::FullEvent::Ready { data_about_bot, .. } => {
-                        info!("Logged in as {}", data_about_bot.user.name);
-                    }
-                    _ => {}
+                if let serenity::FullEvent::Ready { data_about_bot, .. } = event {
+                    info!("Logged in as {}", data_about_bot.user.name);
                 }
                 Ok(())
             })

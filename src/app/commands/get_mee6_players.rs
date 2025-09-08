@@ -1,16 +1,19 @@
 use poise::CreateReply;
-use serenity::all::CreateAttachment;
+use serenity::{all::CreateAttachment};
 
 use crate::{Context, Error};
 
 #[poise::command(slash_command)]
 pub async fn get_mee6_players(ctx: Context<'_>) -> Result<(), Error> {
     ctx.defer().await?;
+
+    let guild_id = ctx.guild_id().unwrap();
+
     let members = ctx
         .data()
         .mee6_repository
         .as_ref()
-        .get_players()
+        .get_players(guild_id.into())
         .await
         .unwrap();
 

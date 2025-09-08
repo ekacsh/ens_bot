@@ -13,7 +13,7 @@ pub struct Mee6Player {
 
 #[async_trait]
 pub trait Mee6Repository {
-    async fn get_players(&self) -> Result<Vec<Mee6Player>, Error>;
+    async fn get_players(&self, guild_id: u64) -> Result<Vec<Mee6Player>, Error>;
 }
 
 pub struct ApiMee6Repository {
@@ -34,16 +34,36 @@ struct Mee6Data {
 
 #[async_trait]
 impl Mee6Repository for ApiMee6Repository {
-    async fn get_players(&self) -> Result<Vec<Mee6Player>, Error> {
-        let client = reqwest::Client::new();
-        let data: Mee6Data = client
-            .get(&self.api_url)
-            .header("Authorization", &self.token)
-            .send()
-            .await?
-            .json()
-            .await?;
+    async fn get_players(&self, guild_id: u64) -> Result<Vec<Mee6Player>, Error> {
+        let base_url = format!("{}/plugins/levels/leaderboard/{guild_id}", self.api_url);
 
-        Ok(data.players)
+        let client = reqwest::Client::new();
+        let mut players: Vec<Mee6Player> = vec![];
+        let mut page = 0;
+
+        loop {
+            let url = format!("{base_url}?page={page}");
+
+            let data: Mee6Data = client
+                .get(&url)
+                .header("Authorization", &self.token)
+                .send()
+                .await?
+                .json()
+                .await?;
+
+            let mut players_level5plus: Vec<Mee6Player> =
+                data.players.into_iter().filter(|p| p.level >= 5).collect();
+
+            if players_level5plus.is_empty() {
+                break;
+            }
+
+            players.append(&mut players_level5plus);
+
+            page += 1;
+        }
+
+        Ok(players)
     }
 }
