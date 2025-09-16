@@ -14,6 +14,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install mingw-w64 (for Windows cross-compilation)
+        run: sudo apt-get update && sudo apt-get install -y mingw-w64
+        shell: bash
+
       - name: Install Zig
         uses: korandoru/setup-zig@v1
         with:
