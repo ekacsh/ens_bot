@@ -112,6 +112,7 @@ pub fn generate_report(members: &[User]) -> String {
         FalconRank::CopperFalcon,
         FalconRank::GuildMember,
         FalconRank::NewMember,
+        FalconRank::OnBreak,
         FalconRank::UnderGp,
         FalconRank::Kick,
     ];

@@ -17,6 +17,7 @@ pub enum FalconRank {
     StarfireFalcon,
     DreadloFalcon,
     GodshardFalcon,
+    OnBreak,
     UnderGp,
     Kick,
 }
@@ -36,6 +37,7 @@ static CODE_TO_RANK: Lazy<HashMap<&'static str, FalconRank>> = Lazy::new(|| {
         ("SF", StarfireFalcon),
         ("DL", DreadloFalcon),
         ("GS", GodshardFalcon),
+        ("BREAK", OnBreak),
         ("U", UnderGp),
         ("KICK", Kick),
     ])
@@ -114,6 +116,11 @@ impl FalconRank {
                 rank_id: 904308472080904193,
                 code: "U",
             },
+            FalconRank::OnBreak => Rank {
+                name: "On Break",
+                rank_id: 898340609239166996,
+                code: "BREAK",
+            },
             FalconRank::Kick => Rank {
                 name: "Kick",
                 rank_id: 904308472080904193,
@@ -122,7 +129,7 @@ impl FalconRank {
         }
     }
 
-    pub const RANK_ROLES: [FalconRank; 13] = [
+    pub const RANK_ROLES: [FalconRank; 14] = [
         FalconRank::NewMember,
         FalconRank::CopperFalcon,
         FalconRank::IronFalcon,
@@ -134,6 +141,7 @@ impl FalconRank {
         FalconRank::StarfireFalcon,
         FalconRank::DreadloFalcon,
         FalconRank::GodshardFalcon,
+        FalconRank::OnBreak,
         FalconRank::UnderGp,
         FalconRank::Kick,
     ];
