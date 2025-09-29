@@ -129,7 +129,7 @@ impl FalconRank {
         }
     }
 
-    pub const RANK_ROLES: [FalconRank; 14] = [
+    pub const RANK_ROLES: [FalconRank; 13] = [
         FalconRank::NewMember,
         FalconRank::CopperFalcon,
         FalconRank::IronFalcon,
@@ -141,7 +141,6 @@ impl FalconRank {
         FalconRank::StarfireFalcon,
         FalconRank::DreadloFalcon,
         FalconRank::GodshardFalcon,
-        FalconRank::OnBreak,
         FalconRank::UnderGp,
         FalconRank::Kick,
     ];
