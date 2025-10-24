@@ -43,6 +43,7 @@ fn build_framework_options() -> poise::FrameworkOptions<Data, Error> {
             commands::week_ranking(),
             commands::reset_ranks(),
             commands::to_kick(),
+            commands::off(),
         ],
         prefix_options: poise::PrefixFrameworkOptions {
             prefix: Some("!".into()),
@@ -53,7 +54,10 @@ fn build_framework_options() -> poise::FrameworkOptions<Data, Error> {
             Box::pin(async move {
                 let username = ctx.author().name.clone();
                 let user_id = ctx.author().id;
-                info!("User {username}({user_id}) is executing the command {}!", ctx.command().qualified_name);
+                info!(
+                    "User {username}({user_id}) is executing the command {}!",
+                    ctx.command().qualified_name
+                );
             })
         },
         command_check: Some(|ctx| {
@@ -64,8 +68,11 @@ fn build_framework_options() -> poise::FrameworkOptions<Data, Error> {
 
                 let allow_all_commands = [commands::ping().name];
 
-                let guild_member_commands =
-                    [commands::member_info().name, commands::age_check().name];
+                let guild_member_commands = [
+                    commands::member_info().name,
+                    commands::age_check().name,
+                    commands::off().name,
+                ];
 
                 let is_guild_member = helpers::is_guild_member(ctx).await?;
 
@@ -80,13 +87,42 @@ fn build_framework_options() -> poise::FrameworkOptions<Data, Error> {
             Box::pin(async move {
                 let username = ctx.author().name.clone();
                 let user_id = ctx.author().id;
-                info!("User {username}({user_id}) has executed the command {}!", ctx.command().qualified_name);
+                info!(
+                    "User {username}({user_id}) has executed the command {}!",
+                    ctx.command().qualified_name
+                );
             })
         },
         event_handler: |_ctx, event, _framework, _data| {
             Box::pin(async move {
-                if let serenity::FullEvent::Ready { data_about_bot, .. } = event {
-                    info!("Logged in as {}", data_about_bot.user.name);
+                match event {
+                    serenity::FullEvent::Ready { data_about_bot, .. } => {
+                        info!("Logged in as {}", data_about_bot.user.name);
+                    }
+                    serenity::FullEvent::Message { new_message } => {
+                        if new_message.author.id == 174214663339376640
+                            && !new_message.mentions.is_empty()
+                        {
+                            let users: Vec<String> = new_message
+                                .mentions
+                                .iter()
+                                .map(|u| format!("{}({})", u.name, u.id))
+                                .collect();
+                            let users = users.join(", ");
+
+                            let yoda_spam_channel = serenity::ChannelId::new(1416198578702913576);
+                            if let Err(e) = yoda_spam_channel
+                                .say(
+                                    &_ctx.http,
+                                    format!("Automated message: Yoda has mentioned {users}"),
+                                )
+                                .await
+                            {
+                                error!("Failed to send message to channel: {:?}", e);
+                            }
+                        }
+                    }
+                    _ => {}
                 }
                 Ok(())
             })
